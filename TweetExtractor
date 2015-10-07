@@ -1,0 +1,32 @@
+package twitter;
+
+import javax.swing.JOptionPane;
+
+public class TweetExtractor{
+	public static boolean endThread = false;
+	public static void stop(){
+		endThread = true;
+	}
+	
+	public static String CurrentWorkingDirectory(){
+		return System.getProperty("user.dir");
+	}
+	
+    public static void main(String[] args) {      
+       	TwitterFollow.follow.start();
+    	TwitterTrack.track.start();
+    	System.out.println("Working Directory = " + System.getProperty("user.dir"));
+    	int response;
+    	while (true)
+    	{
+    		response = JOptionPane.showOptionDialog(null, "Click 'End' to terminate program", "Collecting Tweets", 
+    			JOptionPane.YES_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new String[]{"End"}, "default");
+    		if (response == 0) {
+    			TweetExtractor.stop();
+    			JOptionPane.showMessageDialog(null, "End of Program");
+    			System.out.println("End of program");
+    			System.exit(0);
+    		}  	
+      }
+    }
+}
