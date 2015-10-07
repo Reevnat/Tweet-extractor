@@ -1,0 +1,120 @@
+package twitter;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+
+import twitter4j.FilterQuery;
+import twitter4j.StallWarning;
+import twitter4j.Status;
+import twitter4j.StatusDeletionNotice;
+import twitter4j.StatusListener;
+import twitter4j.TwitterStream;
+import twitter4j.TwitterStreamFactory;
+import twitter4j.conf.ConfigurationBuilder;
+
+import com.google.gson.Gson;
+
+public class TwitterFollow {
+	private static int endingFollowStream = 0; //this is for when the program starts to print the final tweet to file
+	public static Thread follow = new Thread()
+   	{
+   		public void run()
+   		{
+   			ConfigurationBuilder cb = new ConfigurationBuilder();
+   			cb.setDebugEnabled(true);
+   			cb.setOAuthConsumerKey("*****************"); //these keys and tokens are required to gain access to the Twitter Stream
+   			cb.setOAuthConsumerSecret("**********************");
+   			cb.setOAuthAccessToken("************************");
+   			cb.setOAuthAccessTokenSecret("**********************");
+   			cb.setJSONStoreEnabled(true); //ensures that the received tweets are in json format
+   			TwitterStream twitterStream = new TwitterStreamFactory(cb.build()).getInstance();
+
+   			StatusListener listener = new StatusListener() {
+
+   				@Override
+   				public void onException(Exception arg0) {
+   					// TODO Auto-generated method stub
+   				}
+
+   				@Override
+   				public void onDeletionNotice(StatusDeletionNotice arg0) {
+   					// TODO Auto-generated method stub
+   				}
+
+   				@Override
+   				public void onScrubGeo(long arg0, long arg1) {
+   					// TODO Auto-generated method stub
+   				}
+
+   				@Override
+   				public void onStatus(Status status) {			
+					String workingDir  = TweetExtractor.CurrentWorkingDirectory();
+					if(TweetExtractor.endThread==false)
+   					{
+   						try {
+   							PrintStream out = new PrintStream(new FileOutputStream(workingDir+"/follow.json", true)); //here the tweets will be printed to file
+                   				try {
+                   					Gson gson= new Gson();
+                   					String data=gson.toJson(status); //ensures that the tweet is in proper JSON format
+                   					out.println(data+",");
+                   				} catch (Exception e) {
+                   					e.printStackTrace();
+                   				} 		
+                   				if(TweetExtractor.endThread==true)
+                   				{
+                   					out.close();
+                   				}	
+   						} catch (FileNotFoundException e) {
+   							System.out.println("Follow File not Found");
+   							System.exit(0);
+   						}
+   					}
+   										
+   					if(TweetExtractor.endThread==true)
+   					{	
+						for(;endingFollowStream<1;endingFollowStream++) //here the final tweet will be printed to file 
+   						{
+   							try {
+       							PrintStream out = new PrintStream(new FileOutputStream(workingDir+"/follow.json", true)); 
+                       				try {
+                       					Gson gson= new Gson();
+                       					String data=gson.toJson(status);
+                       					out.println(data);
+                       					out.println("]}"); //closes the JSON file 
+                       					System.out.println("Twitter Follow ended");
+                       					out.close();
+                       				} catch (Exception e) {
+                       					e.printStackTrace();
+                       				} 		
+       						} catch (FileNotFoundException e) {
+       							System.out.println("Follow File not Found");
+       							System.exit(0);
+       						}
+   							endingFollowStream=2;
+   						}
+   					}
+   				}
+
+   				@Override
+   				public void onTrackLimitationNotice(int arg0) {
+   					// TODO Auto-generated method stub		
+   				}
+
+   				@Override
+   				public void onStallWarning(StallWarning arg0) {
+   				// TODO Auto-generated method stub
+   				}
+   			};
+   			FilterQuery fq = new FilterQuery();
+       
+   			long userIds[] =  {14281853,103065157,14291684,61781260,5680622,15010349,358204197,19017675,15529670,16596200}; //these are the twitter IDs of the parties and their respective party leaders 
+           
+   			fq.follow(userIds); 
+
+   			twitterStream.addListener(listener);
+   			twitterStream.filter(fq);//filter tweets using the Twitter IDs 
+   			return;
+   		}
+   	};
+}
