@@ -13,8 +13,8 @@ public class TweetExtractor{
 	}
 	
     public static void main(String[] args) {      
-       	TwitterFollow.follow.start();
-    	TwitterTrack.track.start();
+       	TwitterFollow.follow.start(); //start thread that uses the follow parameter
+    	TwitterTrack.track.start(); //start thread that uses the track parameter 
     	System.out.println("Working Directory = " + System.getProperty("user.dir"));
     	int response;
     	while (true)
